@@ -3,6 +3,9 @@ local ui = require("ascii-ui")
 local useState = ui.hooks.useState
 local useInterval = ui.hooks.useInterval
 
+local Button = ui.components.Button
+local Paragraph = ui.components.Paragraph
+
 -- Dimensiones de la cuadrícula
 local ROWS = 40
 local COLS = 100
@@ -37,12 +40,11 @@ local function count_neighbors(grid, row, col)
 end
 
 -- El componente principal del juego
-local GameOfLife = ui.createComponent("GameOfLife", function()
+local GameOfLife = ui.createComponent("GameOfLife", function(props)
 	-- Estado de la cuadrícula
 	local grid, setGrid = useState(create_grid())
 	local config = ui.hooks.useConfig()
 
-	-- Lógica de la evolución
 	useInterval(function()
 		local new_grid = {}
 		for i = 1, ROWS do
@@ -61,7 +63,7 @@ local GameOfLife = ui.createComponent("GameOfLife", function()
 			end
 		end
 		setGrid(new_grid)
-	end, 100) -- Intervalo de 100 milisegundos
+	end, props.started and 100 or nil)
 
 	-- Renderizado de la cuadrícula
 	-- Se devuelve una lista de bufferlines, una por cada fila de la cuadrícula
@@ -83,7 +85,22 @@ local GameOfLife = ui.createComponent("GameOfLife", function()
 			return ui.blocks.Segment({ content = line }):wrap()
 		end)
 		:totable()
+end, { started = "boolean" })
+
+local App = ui.createComponent("App", function()
+	local started, setStarted = useState(true)
+
+	return {
+		GameOfLife({ started = started }),
+		Paragraph({ content = "Conway's Game of Life - Press 'q' to exit" }),
+		Button({
+			label = started and "Pause" or "Start",
+			on_press = function()
+				setStarted(not started)
+			end,
+		}),
+	}
 end)
 
 -- Montar la aplicación
-ui.mount(GameOfLife)
+ui.mount(App)
