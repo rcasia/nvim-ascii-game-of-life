@@ -2,6 +2,7 @@
 local ui = require("ascii-ui")
 local useState = ui.hooks.useState
 local useInterval = ui.hooks.useInterval
+local useEffect = ui.hooks.useEffect
 
 local Button = ui.components.Button
 local Paragraph = ui.components.Paragraph
@@ -42,9 +43,10 @@ local function count_neighbors(grid, row, col)
 end
 
 -- El componente principal del juego
-local GameOfLife = ui.createComponent("GameOfLife", function(props)
+local GameOfLife = ui.createComponent("GameOfLife", function()
 	-- Estado de la cuadrícula
 	local grid, setGrid = useState(create_grid())
+	local started, setStarted = useState(true)
 	local config = ui.hooks.useConfig()
 
 	useInterval(function()
@@ -65,44 +67,44 @@ local GameOfLife = ui.createComponent("GameOfLife", function(props)
 			end
 		end
 		setGrid(new_grid)
-	end, props.started and 100 or nil)
+	end, started and 100 or nil)
 
 	-- Renderizado de la cuadrícula
 	-- Se devuelve una lista de bufferlines, una por cada fila de la cuadrícula
-	return vim.iter(range(1, ROWS))
-		:map(function(row_index)
-			-- Se crea un iterador para las columnas de la fila actual
-			local segments = vim.iter(range(1, COLS))
-				:map(function(col_index)
-					-- Determina el carácter según el valor de la celda
-					local char = grid[row_index][col_index] == 1 and config.characters.thumb
-						or config.characters.whitespace
-					-- Devuelve un objeto Segment para cada carácter
-					return ui.blocks.Segment({
-						content = char,
-						is_focusable = not props.started,
-					})
-				end)
-				:totable()
-
-			-- Agrupa los segmentos en un Bufferline y lo devuelve
-			return ui.blocks.Bufferline(unpack(segments))
-		end)
-		:totable()
-end, { started = "boolean" })
-
-local App = ui.createComponent("App", function()
-	local started, setStarted = useState(true)
-
 	return {
-		GameOfLife({ started = started }),
-		Paragraph({ content = "Conway's Game of Life - Press 'q' to exit" }),
 		Button({
 			label = started and "Pause" or "Start",
 			on_press = function()
 				setStarted(not started)
 			end,
 		}),
+		unpack(vim.iter(range(1, ROWS))
+			:map(function(row_index)
+				-- Se crea un iterador para las columnas de la fila actual
+				local segments = vim.iter(range(1, COLS))
+					:map(function(col_index)
+						-- Determina el carácter según el valor de la celda
+						local char = grid[row_index][col_index] == 1 and config.characters.thumb
+							or config.characters.whitespace
+						-- Devuelve un objeto Segment para cada carácter
+						return ui.blocks.Segment({
+							content = char,
+							is_focusable = not started,
+						})
+					end)
+					:totable()
+
+				-- Agrupa los segmentos en un Bufferline y lo devuelve
+				return ui.blocks.Bufferline(unpack(segments))
+			end)
+			:totable()),
+	}
+end, { started = "boolean" })
+
+local App = ui.createComponent("App", function()
+	return {
+		Paragraph({ content = "Conway's Game of Life - Press 'q' to exit" }),
+		GameOfLife(),
 	}
 end)
 
