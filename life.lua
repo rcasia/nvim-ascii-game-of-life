@@ -86,7 +86,7 @@ local GameOfLife = ui.createComponent("GameOfLife", function()
 				setSpeed(speed % 10 + 1)
 			end,
 		}),
-		unpack(vim.iter(range(1, ROWS))
+		vim.iter(range(1, ROWS))
 			:map(function(row_index)
 				-- Se crea un iterador para las columnas de la fila actual
 				local segments = vim.iter(range(1, COLS))
@@ -106,7 +106,7 @@ local GameOfLife = ui.createComponent("GameOfLife", function()
 				-- Agrupa los segmentos en un Bufferline y lo devuelve
 				return ui.blocks.Bufferline(unpack(segments))
 			end)
-			:totable()),
+			:totable(),
 	}
 end)
 
