@@ -2,7 +2,6 @@
 local ui = require("ascii-ui")
 local useState = ui.hooks.useState
 local useInterval = ui.hooks.useInterval
-local useEffect = ui.hooks.useEffect
 
 local Button = ui.components.Button
 local Paragraph = ui.components.Paragraph
@@ -106,7 +105,7 @@ local GameOfLife = ui.createComponent("GameOfLife", function()
 			end)
 			:totable()),
 	}
-end, { started = "boolean" })
+end)
 
 local App = ui.createComponent("App", function()
 	return {
