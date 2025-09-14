@@ -6,6 +6,8 @@ local useInterval = ui.hooks.useInterval
 local Button = ui.components.Button
 local Paragraph = ui.components.Paragraph
 
+local range = vim.fn.range
+
 -- Dimensiones de la cuadrícula
 local ROWS = 40
 local COLS = 100
@@ -67,26 +69,23 @@ local GameOfLife = ui.createComponent("GameOfLife", function(props)
 
 	-- Renderizado de la cuadrícula
 	-- Se devuelve una lista de bufferlines, una por cada fila de la cuadrícula
-	local lines = {}
-	for i = 1, ROWS do
-		local line_content = ""
-		for j = 1, COLS do
-			if grid[i][j] == 1 then
-				line_content = line_content .. config.characters.thumb -- Célula viva
-			else
-				line_content = line_content .. config.characters.whitespace -- Célula muerta
-			end
-		end
-		table.insert(lines, line_content)
-	end
-
-	return vim.iter(lines)
-		:map(function(line)
-			local segments = vim.iter(vim.split(line, ""))
-				:map(function(char)
-					return ui.blocks.Segment({ content = char, is_focusable = not props.started })
+	return vim.iter(range(1, ROWS))
+		:map(function(row_index)
+			-- Se crea un iterador para las columnas de la fila actual
+			local segments = vim.iter(range(1, COLS))
+				:map(function(col_index)
+					-- Determina el carácter según el valor de la celda
+					local char = grid[row_index][col_index] == 1 and config.characters.thumb
+						or config.characters.whitespace
+					-- Devuelve un objeto Segment para cada carácter
+					return ui.blocks.Segment({
+						content = char,
+						is_focusable = not props.started,
+					})
 				end)
 				:totable()
+
+			-- Agrupa los segmentos en un Bufferline y lo devuelve
 			return ui.blocks.Bufferline(unpack(segments))
 		end)
 		:totable()
