@@ -6,6 +6,8 @@ local useInterval = ui.hooks.useInterval
 local Button = ui.components.Button
 local Paragraph = ui.components.Paragraph
 
+local Hexacolor = require("ascii-ui.hexacolor")
+
 local range = vim.fn.range
 
 -- Dimensiones de la cuadrícula
@@ -96,6 +98,7 @@ local GameOfLife = ui.createComponent("GameOfLife", function()
 						return ui.blocks.Segment({
 							content = char,
 							is_focusable = not started,
+							highlight = Hexacolor.new("#ff00aa"):get_highlight(),
 						})
 					end)
 					:totable()
