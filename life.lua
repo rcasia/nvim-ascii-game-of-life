@@ -47,6 +47,7 @@ local GameOfLife = ui.createComponent("GameOfLife", function()
 	-- Estado de la cuadrícula
 	local grid, setGrid = useState(create_grid())
 	local started, setStarted = useState(true)
+	local speed, setSpeed = useState(1)
 	local config = ui.hooks.useConfig()
 
 	useInterval(function()
@@ -67,7 +68,7 @@ local GameOfLife = ui.createComponent("GameOfLife", function()
 			end
 		end
 		setGrid(new_grid)
-	end, started and 100 or nil)
+	end, started and math.floor(1000 / speed) or nil)
 
 	-- Renderizado de la cuadrícula
 	-- Se devuelve una lista de bufferlines, una por cada fila de la cuadrícula
@@ -76,6 +77,12 @@ local GameOfLife = ui.createComponent("GameOfLife", function()
 			label = started and "Pause" or "Start",
 			on_press = function()
 				setStarted(not started)
+			end,
+		}),
+		Button({
+			label = speed .. "x",
+			on_press = function()
+				setSpeed(speed % 10 + 1)
 			end,
 		}),
 		unpack(vim.iter(range(1, ROWS))
