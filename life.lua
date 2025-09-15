@@ -43,15 +43,10 @@ local function count_neighbors(grid, row, col)
 	return live_neighbors
 end
 
--- El componente principal del juego
-local GameOfLife = ui.createComponent("GameOfLife", function()
-	-- Estado de la cuadrícula
+local function useGrid()
 	local grid, setGrid = useState(create_grid())
-	local started, setStarted = useState(true)
-	local speed, setSpeed = useState(1)
-	local config = ui.hooks.useConfig()
 
-	useInterval(function()
+	local function updateGrid()
 		local new_grid = {}
 		for i = 1, ROWS do
 			new_grid[i] = {}
@@ -69,6 +64,21 @@ local GameOfLife = ui.createComponent("GameOfLife", function()
 			end
 		end
 		setGrid(new_grid)
+	end
+
+	return grid, updateGrid
+end
+
+-- El componente principal del juego
+local GameOfLife = ui.createComponent("GameOfLife", function()
+	-- Estado de la cuadrícula
+	local grid, updateGrid = useGrid()
+	local started, setStarted = useState(true)
+	local speed, setSpeed = useState(1)
+	local config = ui.hooks.useConfig()
+
+	useInterval(function()
+		updateGrid()
 	end, started and math.floor(1000 / speed) or nil)
 
 	-- Renderizado de la cuadrícula
