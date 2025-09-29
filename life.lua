@@ -21,7 +21,7 @@ local function create_grid()
 		grid[i] = {}
 		for j = 1, COLS do
 			-- Inicializar la cuadrícula con un patrón aleatorio de células vivas o muertas
-			grid[i][j] = (math.random(10) > 8) and 1 or 0
+			grid[i][j] = 0
 		end
 	end
 	return grid
@@ -66,16 +66,23 @@ local function useGrid()
 		setGrid(new_grid)
 	end
 
-	return grid, updateGrid
+	local toggleCell = function(row, col)
+		local new_grid = vim.deepcopy(grid)
+		new_grid[row][col] = 1 - new_grid[row][col] -- Alterna entre 0 y 1
+		setGrid(new_grid)
+	end
+
+	return grid, updateGrid, toggleCell
 end
 
 -- El componente principal del juego
 local GameOfLife = ui.createComponent("GameOfLife", function()
 	-- Estado de la cuadrícula
-	local grid, updateGrid = useGrid()
-	local started, setStarted = useState(true)
-	local speed, setSpeed = useState(1)
+	local grid, updateGrid, toggleCell = useGrid()
+	local started, setStarted = useState(false)
+	local speed, setSpeed = useState(5)
 	local config = ui.hooks.useConfig()
+	local cc = config.characters
 
 	useInterval(function()
 		updateGrid()
@@ -101,14 +108,17 @@ local GameOfLife = ui.createComponent("GameOfLife", function()
 				-- Se crea un iterador para las columnas de la fila actual
 				local segments = vim.iter(range(1, COLS))
 					:map(function(col_index)
-						-- Determina el carácter según el valor de la celda
-						local char = grid[row_index][col_index] == 1 and config.characters.thumb
-							or config.characters.whitespace
 						-- Devuelve un objeto Segment para cada carácter
 						return ui.blocks.Segment({
-							content = char,
+							content = grid[row_index][col_index] == 1 and cc.thumb or cc.whitespace,
 							is_focusable = not started,
-							highlight = Hexacolor.new("#ff00aa"):get_highlight(),
+							highlight = Hexacolor.new("#FF0000"):get_highlight(),
+							interactions = {
+								SELECT = function()
+									print(("i am (%d, %d)"):format(row_index, col_index))
+									toggleCell(row_index, col_index)
+								end,
+							},
 						})
 					end)
 					:totable()
