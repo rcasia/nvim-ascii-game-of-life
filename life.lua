@@ -112,7 +112,7 @@ local GameOfLife = ui.createComponent("GameOfLife", function()
 						return ui.blocks.Segment({
 							content = grid[row_index][col_index] == 1 and cc.thumb or cc.whitespace,
 							is_focusable = not started,
-							highlight = Hexacolor.new("#FF0000"):get_highlight(),
+							color = { fg = "#FF0000" },
 							interactions = {
 								SELECT = function()
 									print(("i am (%d, %d)"):format(row_index, col_index))
